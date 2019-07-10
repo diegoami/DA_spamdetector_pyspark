@@ -1,7 +1,10 @@
 FROM python:3
-RUN apt-get install default-jdk
+RUN apt update
+RUN apt-get -y install default-jdk
 RUN pip install numpy pyspark
-RUN mkdir /data
+
+WORKDIR /opt
+RUN mkdir data
 
 ADD create_model.py .
 ADD spam_out.csv .

@@ -27,3 +27,33 @@ To test it
 ```
 python test_model.py
 ```
+
+## EXECUTE IN DOCKER
+
+YOUR_DATA_DIRECTORY is where you put the model files
+
+Build the docker image
+
+```
+docker build -t spam_detector_pyspark . 
+```
+
+Create the model
+```
+docker run  -v <YOUR_DATA_DIRECTORY>:/opt/data spam_detector_pyspark /bin/sh -c "python create_model.py"
+```
+
+test the model
+```
+docker run  -v <YOUR_DATA_DIRECTORY>:/opt/data spam_detector_pyspark /bin/sh -c "python test_model.py"
+```
+
+## EXPECTED MODEL PERFORMANCE
+
+Test PR and ROC : 0.8782117128454908, 0.9024385488801547                        
+
+Overall PR and ROC : 0.9781629515801471, 0.9820789201711856
+
+Confusion matrix : 
+[[4820.,    5.],
+ [  26.,  721.]]
