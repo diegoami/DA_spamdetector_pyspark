@@ -57,3 +57,5 @@ Overall PR and ROC : 0.9781629515801471, 0.9820789201711856
 Confusion matrix : 
 [[4820.,    5.],
  [  26.,  721.]]
+ 
+ See [model.out](model.out) for more metrics.

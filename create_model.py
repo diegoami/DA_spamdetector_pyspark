@@ -12,8 +12,6 @@ from pyspark.ml.feature import HashingTF
 from pyspark.mllib.evaluation import BinaryClassificationMetrics
 from pyspark.mllib.evaluation import MulticlassMetrics
 
-from pyspark.ml.evaluation import BinaryClassificationEvaluator
-from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 
 
 
@@ -34,20 +32,17 @@ lr = LogisticRegression(maxIter=100, regParam=0.001)
 
 pipeline = Pipeline(stages=[tokenizer, hashingTF, lr])
 model = pipeline.fit(trainingDf)
-
-testPredictions = model.transform(testDf).withColumn("label", testDf["label"].cast(DoubleType()))
-predictions = model.transform(df).withColumn("label", df["label"].cast(DoubleType()))
-
-testMetrics = BinaryClassificationMetrics(testPredictions.select("prediction", "label").rdd.map(lambda lp: (lp["prediction"], lp["label"])))
-print(f"Test PR and ROC : {testMetrics.areaUnderPR}, {testMetrics.areaUnderROC}\n")
-
-overallMetrics = BinaryClassificationMetrics(predictions.select("prediction", "label").rdd.map(lambda lp: (lp["prediction"], lp["label"])))
-print(f"Overall PR and ROC : {overallMetrics.areaUnderPR}, {overallMetrics.areaUnderROC}\n")
-
-metrics = MulticlassMetrics(predictions.select("prediction", "label").rdd.map(lambda lp: (lp["prediction"], lp["label"])))
-confusion = metrics.confusionMatrix()
-
-print("Confusion matrix : ")
-print(confusion)
 model.write().overwrite().save("data/sparkmodel")
 print("Model written to data/sparkmodel")
+
+testPredictions = model.transform(testDf).withColumn("label", testDf["label"].cast(DoubleType()))
+rdd_map = testPredictions.select("prediction", "label").rdd.map(lambda lp: (lp["prediction"], lp["label"]))
+test_binary_metrics = BinaryClassificationMetrics(rdd_map)
+print(f"Test PR and ROC : {test_binary_metrics.areaUnderPR}, {test_binary_metrics.areaUnderROC}\n")
+
+test_metrics =  MulticlassMetrics(rdd_map)
+print("Test Confusion matrix : ")
+print(test_metrics.confusionMatrix())
+print(f"Test: Precision {test_metrics.precision(1), test_metrics.precision(0)}")
+print(f"Test: Recall {test_metrics.recall(1), test_metrics.recall(0)}")
+print(f"Test: Accuracy {test_metrics.accuracy}")
